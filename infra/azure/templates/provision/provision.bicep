@@ -1,18 +1,18 @@
 @secure()
-param teamsFxProvisionParameters object
+param provisionParameters object
 
-var resourceBaseName = teamsFxProvisionParameters.resourceBaseName
+var resourceBaseName = provisionParameters.resourceBaseName
 
 // fx-aad
-var m365ClientId = teamsFxProvisionParameters['m365ClientId']
-var m365ClientSecret = teamsFxProvisionParameters['m365ClientSecret']
-var m365TenantId = teamsFxProvisionParameters['m365TenantId']
-var m365OauthAuthorityHost = teamsFxProvisionParameters['m365OauthAuthorityHost']
+var m365ClientId = provisionParameters['m365ClientId']
+var m365ClientSecret = provisionParameters['m365ClientSecret']
+var m365TenantId = provisionParameters['m365TenantId']
+var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
 
-var m365ApplicationIdUri = 'api://${frontendHostingProvision.outputs.domain}/botid-${bot_aadClientId}'  // need to be removed
+var m365ApplicationIdUri = 'api://${frontendHostingProvision.outputs.domain}/botid-${bot_aadClientId}' // need to be removed
 
 // fx-frontend-hosting
-var frontendHosting_storageName = contains(teamsFxProvisionParameters, 'frontendHosting_storageName') ? teamsFxProvisionParameters['frontendHosting_storageName'] : 'frontendstg${uniqueString(resourceBaseName)}'
+var frontendHosting_storageName = contains(provisionParameters, 'frontendHosting_storageName') ? provisionParameters['frontendHosting_storageName'] : 'frontendstg${uniqueString(resourceBaseName)}'
 
 module frontendHostingProvision './frontendHostingProvision.bicep' = {
   name: 'frontendHostingProvision'
@@ -21,8 +21,18 @@ module frontendHostingProvision './frontendHostingProvision.bicep' = {
   }
 }
 
+output teamsFxFeHostingOutput object = {
+  teamsFxProfile: {
+    'fx-frontend-hosting': {
+      domain: frontendHostingProvision.outputs.domain
+      endpoint: frontendHostingProvision.outputs.endpoint
+      resourceId: frontendHostingProvision.outputs.resourceId
+    }
+  }
+}
+
 // fx-identity
-var identity_managedIdentityName = contains(teamsFxProvisionParameters, 'identity_managedIdentityName') ? teamsFxProvisionParameters['identity_managedIdentityName'] : '${resourceBaseName}-managedIdentity'
+var identity_managedIdentityName = contains(provisionParameters, 'identity_managedIdentityName') ? provisionParameters['identity_managedIdentityName'] : '${resourceBaseName}-managedIdentity'
 
 module userAssignedIdentityProvision './userAssignedIdentityProvision.bicep' = {
   name: 'userAssignedIdentityProvision'
@@ -31,11 +41,19 @@ module userAssignedIdentityProvision './userAssignedIdentityProvision.bicep' = {
   }
 }
 
+output teamsFxIdentityOutput object = {
+  teamsFxProfile: {
+    'fx-identity': {
+      resourceId: userAssignedIdentityProvision.outputs.identityId
+    }
+  }
+}
+
 // fx-sql
-var azureSql_admin = teamsFxProvisionParameters['azureSql_admin']
-var azureSql_adminPassword = teamsFxProvisionParameters['azureSql_adminPassword']
-var azureSql_serverName = contains(teamsFxProvisionParameters, 'azureSql_serverName') ? teamsFxProvisionParameters['azureSql_serverName'] : '${resourceBaseName}-sql-server'
-var azureSql_databaseName = contains(teamsFxProvisionParameters, 'azureSql_databaseName') ? teamsFxProvisionParameters['azureSql_databaseName'] : '${resourceBaseName}-database'
+var azureSql_admin = provisionParameters['azureSql_admin']
+var azureSql_adminPassword = provisionParameters['azureSql_adminPassword']
+var azureSql_serverName = contains(provisionParameters, 'azureSql_serverName') ? provisionParameters['azureSql_serverName'] : '${resourceBaseName}-sql-server'
+var azureSql_databaseName = contains(provisionParameters, 'azureSql_databaseName') ? provisionParameters['azureSql_databaseName'] : '${resourceBaseName}-database'
 
 module azureSqlProvision './azureSqlProvision.bicep' = {
   name: 'azureSqlProvision'
@@ -47,16 +65,24 @@ module azureSqlProvision './azureSqlProvision.bicep' = {
   }
 }
 
+output teamsFxSqlOutput object = {
+  teamsFxProfile: {
+    'fx-sql': {
+      sqlServerResourceId: azureSqlProvision.outputs.sqlServerResourceId
+    }
+  }
+}
+
 // fx-bot
-var bot_aadClientId = teamsFxProvisionParameters['bot_aadClientId']
-var bot_aadClientSecret = teamsFxProvisionParameters['bot_aadClientSecret']
-var bot_serviceName = contains(teamsFxProvisionParameters, 'bot_serviceName') ? teamsFxProvisionParameters['bot_serviceName'] : '${resourceBaseName}-bot-service'
-var bot_displayName = contains(teamsFxProvisionParameters, 'bot_displayName') ? teamsFxProvisionParameters['bot_displayName'] : '${resourceBaseName}-bot-displayname'
-var bot_serverfarmsName = contains(teamsFxProvisionParameters, 'bot_serverfarmsName') ? teamsFxProvisionParameters['bot_serverfarmsName'] : '${resourceBaseName}-bot-serverfarms'
-var bot_webAppSKU = contains(teamsFxProvisionParameters, 'bot_webAppSKU') ? teamsFxProvisionParameters['bot_webAppSKU'] : 'F1'
-var bot_serviceSKU = contains(teamsFxProvisionParameters, 'bot_serviceSKU') ? teamsFxProvisionParameters['bot_serviceSKU'] : 'F1'
-var bot_sitesName = contains(teamsFxProvisionParameters, 'bot_sitesName') ? teamsFxProvisionParameters['bot_sitesName'] : '${resourceBaseName}-bot-sites'
-var authLoginUriSuffix = contains(teamsFxProvisionParameters, 'authLoginUriSuffix') ? teamsFxProvisionParameters['authLoginUriSuffix'] : 'auth-start.html'
+var bot_aadClientId = provisionParameters['bot_aadClientId']
+var bot_aadClientSecret = provisionParameters['bot_aadClientSecret']
+var bot_serviceName = contains(provisionParameters, 'bot_serviceName') ? provisionParameters['bot_serviceName'] : '${resourceBaseName}-bot-service'
+var bot_displayName = contains(provisionParameters, 'bot_displayName') ? provisionParameters['bot_displayName'] : '${resourceBaseName}-bot-displayname'
+var bot_serverfarmsName = contains(provisionParameters, 'bot_serverfarmsName') ? provisionParameters['bot_serverfarmsName'] : '${resourceBaseName}-bot-serverfarms'
+var bot_webAppSKU = contains(provisionParameters, 'bot_webAppSKU') ? provisionParameters['bot_webAppSKU'] : 'F1'
+var bot_serviceSKU = contains(provisionParameters, 'bot_serviceSKU') ? provisionParameters['bot_serviceSKU'] : 'F1'
+var bot_sitesName = contains(provisionParameters, 'bot_sitesName') ? provisionParameters['bot_sitesName'] : '${resourceBaseName}-bot-sites'
+var authLoginUriSuffix = contains(provisionParameters, 'authLoginUriSuffix') ? provisionParameters['authLoginUriSuffix'] : 'auth-start.html'
 
 module botProvision './botProvision.bicep' = {
   name: 'botProvision'
@@ -91,16 +117,18 @@ module botConfiguration './botConfiguration.bicep' = {
   }
 }
 
-output fxBotPluginOutput object = {
-  profile: {
-    resourceId: botProvision.outputs.botWebAppName // to be update
+output teamsFxBotOutput object = {
+  teamsFxProfile: {
+    'fx-bot': {
+      webAppResourceId: botProvision.outputs.webAppResourceId
+    }
   }
 }
 
 // fx-function
-var function_serverfarmsName = contains(teamsFxProvisionParameters, 'function_serverfarmsName') ? teamsFxProvisionParameters['function_serverfarmsName'] : '${resourceBaseName}-function-serverfarms'
-var function_webappName = contains(teamsFxProvisionParameters, 'function_webappName') ? teamsFxProvisionParameters['function_webappName'] : '${resourceBaseName}-function-webapp'
-var function_storageName = contains(teamsFxProvisionParameters, 'function_storageName') ? teamsFxProvisionParameters['function_storageName'] : 'functionstg${uniqueString(resourceBaseName)}'
+var function_serverfarmsName = contains(provisionParameters, 'function_serverfarmsName') ? provisionParameters['function_serverfarmsName'] : '${resourceBaseName}-function-serverfarms'
+var function_webappName = contains(provisionParameters, 'function_webappName') ? provisionParameters['function_webappName'] : '${resourceBaseName}-function-webapp'
+var function_storageName = contains(provisionParameters, 'function_storageName') ? provisionParameters['function_storageName'] : 'functionstg${uniqueString(resourceBaseName)}'
 
 module functionProvision './functionProvision.bicep' = {
   name: 'functionProvision'
@@ -127,11 +155,19 @@ module functionConfiguration './functionConfiguration.bicep' = {
   }
 }
 
+output teamsFxFunctionOutput object = {
+  teamsFxProfile: {
+    'fx-function': {
+      functionAppResourceId: functionProvision.outputs.functionAppResourceId
+    }
+  }
+}
+
 // fx-simpleauth
-var simpleAuth_sku = contains(teamsFxProvisionParameters, 'simpleAuth_sku') ? teamsFxProvisionParameters['simpleAuth_sku'] : 'F1'
-var simpleAuth_serverFarmsName = contains(teamsFxProvisionParameters, 'simpleAuth_serverFarmsName') ? teamsFxProvisionParameters['simpleAuth_serverFarmsName'] : '${resourceBaseName}-simpleAuth-serverfarms'
-var simpleAuth_webAppName = contains(teamsFxProvisionParameters, 'simpleAuth_webAppName') ? teamsFxProvisionParameters['simpleAuth_webAppName'] : '${resourceBaseName}-simpleAuth-webapp'
-var simpleAuth_packageUri = contains(teamsFxProvisionParameters, 'simpleAuth_packageUri') ? teamsFxProvisionParameters['simpleAuth_packageUri'] : 'https://github.com/OfficeDev/TeamsFx/releases/download/simpleauth@0.1.0/Microsoft.TeamsFx.SimpleAuth_0.1.0.zip'
+var simpleAuth_sku = contains(provisionParameters, 'simpleAuth_sku') ? provisionParameters['simpleAuth_sku'] : 'F1'
+var simpleAuth_serverFarmsName = contains(provisionParameters, 'simpleAuth_serverFarmsName') ? provisionParameters['simpleAuth_serverFarmsName'] : '${resourceBaseName}-simpleAuth-serverfarms'
+var simpleAuth_webAppName = contains(provisionParameters, 'simpleAuth_webAppName') ? provisionParameters['simpleAuth_webAppName'] : '${resourceBaseName}-simpleAuth-webapp'
+var simpleAuth_packageUri = contains(provisionParameters, 'simpleAuth_packageUri') ? provisionParameters['simpleAuth_packageUri'] : 'https://github.com/OfficeDev/TeamsFx/releases/download/simpleauth@0.1.0/Microsoft.TeamsFx.SimpleAuth_0.1.0.zip'
 
 module simpleAuthProvision './simpleAuthProvision.bicep' = {
   name: 'simpleAuthProvision'
@@ -157,27 +193,3 @@ module simpleAuthConfiguration './simpleAuthConfiguration.bicep' = {
     simpelAuthPackageUri: simpleAuth_packageUri
   }
 }
-
-
-
-output frontendHosting_storageResourceId string = frontendHostingProvision.outputs.resourceId
-output frontendHosting_endpoint string = frontendHostingProvision.outputs.endpoint
-output frontendHosting_domain string = frontendHostingProvision.outputs.domain
-output identity_identityName string = userAssignedIdentityProvision.outputs.identityName
-output identity_identityId string = userAssignedIdentityProvision.outputs.identityId
-output identity_identity string = userAssignedIdentityProvision.outputs.identity
-output azureSql_sqlEndpoint string = azureSqlProvision.outputs.sqlEndpoint
-output azureSql_databaseName string = azureSqlProvision.outputs.databaseName
-output bot_webAppSKU string = botProvision.outputs.botWebAppSKU
-output bot_serviceSKU string = botProvision.outputs.botServiceSKU
-output bot_webAppName string = botProvision.outputs.botWebAppName
-output bot_domain string = botProvision.outputs.botDomain
-output bot_appServicePlanName string = botProvision.outputs.appServicePlanName
-output bot_serviceName string = botProvision.outputs.botServiceName
-output bot_webAppEndpoint string = botProvision.outputs.botWebAppEndpoint
-output function_functionEndpoint string = functionProvision.outputs.functionEndpoint
-output function_appResourceId string = functionProvision.outputs.functionAppResourceId
-output simpleAuth_skuName string = simpleAuthProvision.outputs.skuName
-output simpleAuth_endpoint string = simpleAuthProvision.outputs.endpoint
-output simpleAuth_webAppName string = simpleAuthProvision.outputs.webAppName
-output simpleAuth_appServicePlanName string = simpleAuthProvision.outputs.appServicePlanName

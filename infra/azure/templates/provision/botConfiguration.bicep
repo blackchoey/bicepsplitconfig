@@ -28,7 +28,6 @@ resource botWebAppSettings 'Microsoft.Web/sites/config@2021-01-01' = {
     BOT_ID: botAadClientId
     BOT_PASSWORD: botAadClientSecret
     INITIATE_LOGIN_ENDPOINT: initiateLoginEndpoint
-    M365_APPLICATION_ID_URI: m365ApplicationIdUri
     M365_AUTHORITY_HOST: m365OauthAuthorityHost
     M365_CLIENT_ID: m365ClientId
     M365_CLIENT_SECRET: m365ClientSecret
