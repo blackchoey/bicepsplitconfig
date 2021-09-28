@@ -1,76 +1,80 @@
 param botServiceName string
-param botAadClientId string
-
 param botDisplayName string
-param botServerfarmsName string
-param botWebAppSKU string = 'F1'
-param botServiceSKU string = 'F1'
-param botWebAppName string
-param identityName string
+param botAadAppClientId string
+@secure()
+param botAadAppClientSecret string
+param serverfarmsName string
+param webAppName string
+param webAppSKU string = 'F1'
+param userAssignedIdentityId string
 
-var botWebAppHostname = botWebApp.properties.hostNames[0]
-var botEndpoint = 'https://${botWebAppHostname}'
-
-resource botServices 'Microsoft.BotService/botServices@2021-03-01' = {
+resource botService 'Microsoft.BotService/botServices@2021-03-01' = {
   kind: 'azurebot'
   location: 'global'
   name: botServiceName
   properties: {
     displayName: botDisplayName
-    endpoint: uri(botEndpoint, '/api/messages')
-    msaAppId: botAadClientId
+    endpoint: uri('https://${webApp.properties.defaultHostName}', '/api/messages')
+    msaAppId: botAadAppClientId
   }
   sku: {
-    name: botServiceSKU
+    name: 'F0'
   }
 }
 
-resource botServicesMsTeamsChannel 'Microsoft.BotService/botServices/channels@2021-03-01' = {
+resource botServiceMsTeamsChannel 'Microsoft.BotService/botServices/channels@2021-03-01' = {
+  parent: botService
   location: 'global'
-  name: '${botServiceName}/MsTeamsChannel'
+  name: 'MsTeamsChannel'
   properties: {
     channelName: 'MsTeamsChannel'
   }
 }
 
-resource botServerfarm 'Microsoft.Web/serverfarms@2021-01-01' = {
+resource serverfarm 'Microsoft.Web/serverfarms@2021-01-01' = {
   kind: 'app'
   location: resourceGroup().location
-  name: botServerfarmsName
-  properties: {
-    reserved: false
-  }
+  name: serverfarmsName
   sku: {
-    name: botWebAppSKU
+    name: webAppSKU
   }
 }
 
-resource botWebApp 'Microsoft.Web/sites@2021-01-01' = {
+resource webApp 'Microsoft.Web/sites@2021-01-01' = {
   kind: 'app'
   location: resourceGroup().location
-  name: botWebAppName
+  name: webAppName
   properties: {
-    reserved: false
-    serverFarmId: botServerfarm.id
+    serverFarmId: serverfarm.id
     siteConfig: {
-      alwaysOn: false
-      http20Enabled: false
-      numberOfWorkers: 1
+      appSettings: [
+        {
+          name: 'BOT_ID'
+          value: botAadAppClientId
+        }
+        {
+          name: 'BOT_PASSWORD'
+          value: botAadAppClientSecret
+        }
+        {
+          name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
+          value: 'true'
+        }
+        {
+          name: 'WEBSITE_NODE_DEFAULT_VERSION'
+          value: '12.13.0'
+        }
+      ]
     }
   }
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '${identityName}': {}
+      '${userAssignedIdentityId}': {}
     }
   }
 }
 
-output webAppResourceId string = botWebApp.id
-output botWebAppSKU string = botWebAppSKU
-output botServiceSKU string = botServiceSKU
-output botWebAppName string = botWebAppName
-output botDomain string = botWebAppHostname
-output appServicePlanName string = botServerfarmsName
-output botServiceName string = botServiceName
-output botWebAppEndpoint string = botEndpoint
+output webAppResourceId string = webApp.id
+output webAppHostName string = webApp.properties.defaultHostName
+output webAppEndpoint string = 'https://${webApp.properties.defaultHostName}'

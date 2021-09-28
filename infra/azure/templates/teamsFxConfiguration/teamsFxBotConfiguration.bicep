@@ -1,23 +1,33 @@
+// Auto generated content, please customize files under provision folder
+
 @secure()
 param provisionParameters object
 param provisionOutputs object
+@secure()
+param currentAppSettings object
 
-var botWebAppName = split(provisionOutputs.teamsFxBotOutput.profile.resourceId, '/')[8]
-var functionEndpoint = provisionOutputs.teamsFxFunctionOutput.profile.endpoint
-var sqlDatabaseName = provisionOutputs.teamsFxSqlOutput.sqlDatabaseName
-var sqlEndpoint = provisionOutputs.teamsFxSqlOutput.sqlEndpoint
-var identityId = provisionOutputs.teamsFxIdentityOutput.profile.identityId
-var m365ApplicationIdUri = 'api://${provisionOutputs.teamsFxFeHostingOutput.domain}/botid-${provisionParameters.bot_aadClientId}'
+var botWebAppName = split(provisionOutputs.botOutput.value.webAppResourceId, '/')[8]
 
-var currentAppSettings = list('${provisionOutputs.teamsFxBotOutput.profile.resourceId}/config/appsettings', '2020-12-01').properties
+var m365ClientId = provisionParameters['m365ClientId']
+var m365ClientSecret = provisionParameters['m365ClientSecret']
+var m365TenantId = provisionParameters['m365TenantId']
+var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
+var tabAppDomain = provisionOutputs.frontendHostingOutput.value.domain
+var botId = provisionParameters['botAadAppClientId']
+var m365ApplicationIdUri = 'api://${tabAppDomain}}/botid-${botId}'
 
-resource botWebAppSettings 'Microsoft.Web/sites/config@2021-01-01' = {
+resource botWebAppSettings 'Microsoft.Web/sites/config@2021-01-15' = {
     name: '${botWebAppName}/appsettings'
-    properties: union(currentAppSettings, {
-        API_ENDPOINT: functionEndpoint
-        SQL_DATABASE_NAME: sqlDatabaseName
-        SQL_ENDPOINT: sqlEndpoint
-        IDENTITY_ID: identityId
-        M365_APPLICATION_ID_URI: m365ApplicationIdUri // this value needs to be updated when user adds new capability
-    })
+    properties: union({
+        INITIATE_LOGIN_ENDPOINT: uri(provisionOutputs.botOutput.value.webAppEndpoint, 'auth-start.html')
+        M365_AUTHORITY_HOST: m365OauthAuthorityHost
+        M365_CLIENT_ID: m365ClientId
+        M365_CLIENT_SECRET: m365ClientSecret
+        M365_TENANT_ID: m365TenantId
+        M365_APPLICATION_ID_URI: m365ApplicationIdUri
+        API_ENDPOINT: provisionOutputs.functionOutput.value.endpoint
+        SQL_DATABASE_NAME: provisionOutputs.azureSqlOutput.value.sqlDatabaseName
+        SQL_ENDPOINT: provisionOutputs.azureSqlOutput.value.sqlServerEndpoint
+        IDENTITY_ID: provisionOutputs.identityOutput.value.resourceId
+    }, currentAppSettings)
 }

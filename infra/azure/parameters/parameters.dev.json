@@ -1,0 +1,19 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "provisionParameters": {
+            "value": {
+                "resourceBaseName": "chyuan0927eb8582",
+                "azureSqlAdmin": "{{FX_RESOURCE_AZURE_SQL__ADMIN}}",
+                "azureSqlAdminPassword": "{{FX_RESOURCE_AZURE_SQL__ADMINPASSWORD}}",
+                "botAadAppClientId": "{{FX_RESOURCE_BOT__BOTID}}",
+                "botAadAppClientSecret": "{{FX_RESOURCE_BOT__BOTPASSWORD}}",
+                "m365ClientId": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTID}}",
+                "m365ClientSecret": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__CLIENTSECRET}}",
+                "m365TenantId": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__TENANTID}}",
+                "m365OauthAuthorityHost": "{{FX_RESOURCE_AAD_APP_FOR_TEAMS__OAUTHHOST}}"
+            }
+        }
+    }
+}

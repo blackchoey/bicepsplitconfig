@@ -1,10 +1,9 @@
-param managedIdentityName string
+param identityName string
 
 resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
-  name: managedIdentityName
+  name: identityName
   location: resourceGroup().location
 }
 
-output identityName string = managedIdentity.id
-output identityId string = managedIdentity.properties.clientId
-output identity string = managedIdentityName
+output resourceId string = managedIdentity.id
+output clientId string = managedIdentity.properties.clientId

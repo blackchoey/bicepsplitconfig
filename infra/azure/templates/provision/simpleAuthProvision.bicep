@@ -1,35 +1,33 @@
 param sku string
-param simpleAuthServerFarmsName string
-param simpleAuthWebAppName string
+param serverFarmsName string
+param webAppName string
+param simpelAuthPackageUri string
 
-resource simpleAuthServerFarms 'Microsoft.Web/serverfarms@2020-06-01' = {
-  name: simpleAuthServerFarmsName
+resource serverFarms 'Microsoft.Web/serverfarms@2020-06-01' = {
+  name: serverFarmsName
   location: resourceGroup().location
   sku: {
     name: sku
   }
   kind: 'app'
-  properties: {
-    reserved: false
-  }
 }
 
-resource simpleAuthWebApp 'Microsoft.Web/sites@2020-06-01' = {
+resource webApp 'Microsoft.Web/sites@2020-06-01' = {
   kind: 'app'
-  name: simpleAuthWebAppName
+  name: webAppName
   location: resourceGroup().location
   properties: {
-    reserved: false
-    serverFarmId: simpleAuthServerFarms.id
-    siteConfig: {
-      alwaysOn: false
-      http20Enabled: false
-      numberOfWorkers: 1
-    }
+    serverFarmId: serverFarms.id
   }
 }
 
-output webAppName string = simpleAuthWebAppName
-output skuName string = sku
-output endpoint string = 'https://${simpleAuthWebApp.properties.hostNames[0]}'
-output appServicePlanName string = simpleAuthServerFarmsName
+resource simpleAuthDeploy 'Microsoft.Web/sites/extensions@2021-01-15' = {
+  parent: webApp
+  name: 'MSDeploy'
+  properties: {
+    packageUri: simpelAuthPackageUri
+  }
+}
+
+output webAppResourceId string = webApp.id
+output endpoint string = 'https://${webApp.properties.defaultHostName}'
