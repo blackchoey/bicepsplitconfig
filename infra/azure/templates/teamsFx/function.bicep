@@ -26,7 +26,7 @@ var authorizedClientApplicationIds = '${teamsMobileOrDesktopAppClientId};${teams
 
 var currentAllowedOrigins = empty(currentConfigs.cors) ? [] : currentConfigs.cors.allowedOrigins
 
-resource appConfig 'Microsoft.Web/sites/config@2021-01-15' = {
+resource appConfig 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${functionAppName}/web'
   kind: 'functionapp'
   properties: {
@@ -38,7 +38,7 @@ resource appConfig 'Microsoft.Web/sites/config@2021-01-15' = {
   }
 }
 
-resource appSettings 'Microsoft.Web/sites/config@2021-01-15' = {
+resource appSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${functionAppName}/appsettings'
   properties: union({
     API_ENDPOINT: 'https://${provisionOutputs.functionOutput.value.endpoint}'
@@ -54,7 +54,7 @@ resource appSettings 'Microsoft.Web/sites/config@2021-01-15' = {
   }, currentAppSettings)
 }
 
-resource authSettings 'Microsoft.Web/sites/config@2021-01-15' = {
+resource authSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${functionAppName}/authsettings'
   properties: {
     enabled: true

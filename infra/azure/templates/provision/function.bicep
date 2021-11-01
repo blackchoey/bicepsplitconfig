@@ -7,7 +7,7 @@ var serverfarmsName = contains(provisionParameters, 'functionServerfarmsName') ?
 var functionAppName = contains(provisionParameters, 'functionWebappName') ? provisionParameters['functionWebappName'] : '${resourceBaseName}function'
 var storageName = contains(provisionParameters, 'functionStorageName') ? provisionParameters['functionStorageName'] : '${resourceBaseName}func'
 
-resource serverfarms 'Microsoft.Web/serverfarms@2021-01-15' = {
+resource serverfarms 'Microsoft.Web/serverfarms@2021-02-01' = {
   name: serverfarmsName
   kind: 'functionapp'
   location: resourceGroup().location
@@ -16,7 +16,7 @@ resource serverfarms 'Microsoft.Web/serverfarms@2021-01-15' = {
   }
 }
 
-resource functionApp 'Microsoft.Web/sites@2021-01-15' = {
+resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
   name: functionAppName
   kind: 'functionapp'
   location: resourceGroup().location
@@ -67,7 +67,7 @@ resource functionApp 'Microsoft.Web/sites@2021-01-15' = {
   }
 }
 
-resource storage 'Microsoft.Storage/storageAccounts@2021-04-01' = {
+resource storage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
   name: storageName
   kind: 'StorageV2'
   location: resourceGroup().location

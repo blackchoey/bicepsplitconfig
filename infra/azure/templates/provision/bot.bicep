@@ -34,7 +34,7 @@ resource botServiceMsTeamsChannel 'Microsoft.BotService/botServices/channels@202
   }
 }
 
-resource serverfarm 'Microsoft.Web/serverfarms@2021-01-01' = {
+resource serverfarm 'Microsoft.Web/serverfarms@2021-02-01' = {
   kind: 'app'
   location: resourceGroup().location
   name: serverfarmsName
@@ -43,7 +43,7 @@ resource serverfarm 'Microsoft.Web/serverfarms@2021-01-01' = {
   }
 }
 
-resource webApp 'Microsoft.Web/sites@2021-01-01' = {
+resource webApp 'Microsoft.Web/sites@2021-02-01' = {
   kind: 'app'
   location: resourceGroup().location
   name: webAppName
