@@ -48,4 +48,4 @@ resource apimServiceAuthServer 'Microsoft.ApiManagement/service/authorizationSer
   }
 }
 
-output authServiceResourceId string = apimServiceAuthServer.id
+output authServerResourceId string = apimServiceAuthServer.id

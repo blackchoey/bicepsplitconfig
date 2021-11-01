@@ -47,5 +47,5 @@ module teamsFxApimConfig './teamsFx/apim.bicep' = {
 
 output apimConfigOutput object = {
   teamsFxPluginId: 'fx-resource-apim'
-  authServiceResourceId: teamsFxApimConfig.outputs.authServiceResourceId
+  authServerResourceId: teamsFxApimConfig.outputs.authServerResourceId
 }
