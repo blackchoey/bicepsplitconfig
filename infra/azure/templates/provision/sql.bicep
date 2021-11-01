@@ -1,8 +1,11 @@
-param sqlServerName string
-param sqlDatabaseName string 
-param administratorLogin string
 @secure()
-param administratorLoginPassword string
+param provisionParameters object
+
+var resourceBaseName = provisionParameters['resourceBaseName']
+var administratorLogin = provisionParameters['azureSqlAdmin']
+var administratorLoginPassword = provisionParameters['azureSqlAdminPassword']
+var sqlServerName = contains(provisionParameters, 'azureSqlServerName') ? provisionParameters['azureSqlServerName'] : '${resourceBaseName}'
+var sqlDatabaseName = contains(provisionParameters, 'azureSqlDatabaseName') ? provisionParameters['azureSqlDatabaseName'] : '${resourceBaseName}'
 
 resource sqlServer 'Microsoft.Sql/servers@2021-02-01-preview' = {
   location: resourceGroup().location

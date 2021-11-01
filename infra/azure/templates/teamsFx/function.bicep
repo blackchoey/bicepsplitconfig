@@ -49,8 +49,8 @@ resource appSettings 'Microsoft.Web/sites/config@2021-01-15' = {
     M365_AUTHORITY_HOST: m365OauthAuthorityHost
     M365_APPLICATION_ID_URI: m365ApplicationIdUri
     IDENTITY_ID: provisionOutputs.identityOutput.value.resourceId
-    SQL_DATABASE_NAME: provisionOutputs.azureSqlOutput.value.sqlDatabaseName
-    SQL_ENDPOINT: provisionOutputs.azureSqlOutput.value.sqlServerEndpoint
+    SQL_DATABASE_NAME: provisionOutputs.sqlOutput.value.sqlDatabaseName
+    SQL_ENDPOINT: provisionOutputs.sqlOutput.value.sqlServerEndpoint
   }, currentAppSettings)
 }
 

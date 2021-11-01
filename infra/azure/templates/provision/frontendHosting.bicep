@@ -1,4 +1,8 @@
-param storageName string
+@secure()
+param provisionParameters object
+
+var resourceBaseName = provisionParameters['resourceBaseName']
+var storageName = contains(provisionParameters, 'frontendHostingStorageName') ? provisionParameters['frontendHostingStorageName'] : '${resourceBaseName}fe'
 
 resource storage 'Microsoft.Storage/storageAccounts@2021-04-01' = {
   kind: 'StorageV2'

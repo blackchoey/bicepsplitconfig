@@ -1,12 +1,15 @@
-param botServiceName string
-param botDisplayName string
-param botAadAppClientId string
 @secure()
-param botAadAppClientSecret string
-param serverfarmsName string
-param webAppName string
-param webAppSKU string = 'F1'
+param provisionParameters object
 param userAssignedIdentityId string
+
+var resourceBaseName = provisionParameters['resourceBaseName']
+var botAadAppClientId = provisionParameters['botAadAppClientId']
+var botAadAppClientSecret = provisionParameters['botAadAppClientSecret']
+var botServiceName = contains(provisionParameters, 'botServiceName') ? provisionParameters['botServiceName'] : '${resourceBaseName}'
+var botDisplayName = contains(provisionParameters, 'botDisplayName') ? provisionParameters['botDisplayName'] : '${resourceBaseName}'
+var serverfarmsName = contains(provisionParameters, 'botServerfarmsName') ? provisionParameters['botServerfarmsName'] : '${resourceBaseName}bot'
+var webAppSKU = contains(provisionParameters, 'botWebAppSKU') ? provisionParameters['botWebAppSKU'] : 'F1'
+var webAppName = contains(provisionParameters, 'botSitesName') ? provisionParameters['botSitesName'] : '${resourceBaseName}bot'
 
 resource botService 'Microsoft.BotService/botServices@2021-03-01' = {
   kind: 'azurebot'

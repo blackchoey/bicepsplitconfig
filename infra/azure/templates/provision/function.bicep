@@ -1,7 +1,11 @@
-param serverfarmsName string
-param functionAppName string
-param storageName string
+@secure()
+param provisionParameters object
 param userAssignedIdentityId string
+
+var resourceBaseName = provisionParameters['resourceBaseName']
+var serverfarmsName = contains(provisionParameters, 'functionServerfarmsName') ? provisionParameters['functionServerfarmsName'] : '${resourceBaseName}function'
+var functionAppName = contains(provisionParameters, 'functionWebappName') ? provisionParameters['functionWebappName'] : '${resourceBaseName}function'
+var storageName = contains(provisionParameters, 'functionStorageName') ? provisionParameters['functionStorageName'] : '${resourceBaseName}func'
 
 resource serverfarms 'Microsoft.Web/serverfarms@2021-01-15' = {
   name: serverfarmsName
@@ -58,7 +62,7 @@ resource functionApp 'Microsoft.Web/sites@2021-01-15' = {
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '${userAssignedIdentityId}':{}
+      '${userAssignedIdentityId}': {}
     }
   }
 }

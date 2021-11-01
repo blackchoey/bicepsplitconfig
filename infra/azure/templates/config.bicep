@@ -4,7 +4,7 @@ param provisionOutputs object
 
 var simpleAuthCurrentAppSettings = list('${provisionOutputs.simpleAuthOutput.value.webAppResourceId}/config/appsettings', '2021-01-15').properties
 
-module teamsFxSimpleAuthConfig './teamsFxConfiguration/teamsFxSimpleAuthConfiguration.bicep' = {
+module teamsFxSimpleAuthConfig './teamsFx/simpleAuth.bicep' = {
   name: 'addTeamsFxSimpleAuthConfiguration'
   params: {
     provisionParameters: provisionParameters
@@ -13,9 +13,9 @@ module teamsFxSimpleAuthConfig './teamsFxConfiguration/teamsFxSimpleAuthConfigur
   }
 }
 
-var botCurrentAppSettings = list('${provisionOutputs.botOutput.value.webAppResourceId}/config/appsettings', '2021-01-15').properties
+var botCurrentAppSettings = list('${provisionOutputs.botHostingOutput.value.webAppResourceId}/config/appsettings', '2021-01-15').properties
 
-module teamsFxBotConfig './teamsFxConfiguration/teamsFxBotConfiguration.bicep' = {
+module teamsFxBotConfig './teamsFx/bot.bicep' = {
   name: 'addTeamsFxBotConfiguration'
   params: {
     provisionParameters: provisionParameters
@@ -27,7 +27,7 @@ module teamsFxBotConfig './teamsFxConfiguration/teamsFxBotConfiguration.bicep' =
 var functionCurrentConfigs = reference('${provisionOutputs.functionOutput.value.functionAppResourceId}/config/web', '2021-01-15')
 var functionCurrentAppSettings = list('${provisionOutputs.functionOutput.value.functionAppResourceId}/config/appsettings', '2021-01-15').properties
 
-module teamsFxFunctionConfig './teamsFxConfiguration/teamsFxFunctionConfiguration.bicep' = {
+module teamsFxFunctionConfig './teamsFx/function.bicep' = {
   name: 'addTeamsFxFunctionConfiguration'
   params: {
     provisionParameters: provisionParameters
@@ -35,4 +35,17 @@ module teamsFxFunctionConfig './teamsFxConfiguration/teamsFxFunctionConfiguratio
     currentConfigs: functionCurrentConfigs
     currentAppSettings: functionCurrentAppSettings
   }
+}
+
+module teamsFxApimConfig './teamsFx/apim.bicep' = {
+  name: 'addTeamsFxApimConfiguration'
+  params: {
+    provisionParameters: provisionParameters
+    provisionOutputs: provisionOutputs
+  }
+}
+
+output apimConfigOutput object = {
+  teamsFxPluginId: 'fx-resource-apim'
+  authServiceResourceId: teamsFxApimConfig.outputs.authServiceResourceId
 }

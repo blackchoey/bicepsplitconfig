@@ -1,15 +1,11 @@
 @secure()
 param provisionParameters object
 
-var resourceBaseName = provisionParameters.resourceBaseName
-
 // Resources for frontend hosting
-var frontendHostingStorageName = contains(provisionParameters, 'frontendHostingStorageName') ? provisionParameters['frontendHostingStorageName'] : 'frontendstg${uniqueString(resourceBaseName)}'
-
-module frontendHostingProvision './provision/frontendHostingProvision.bicep' = {
+module frontendHostingProvision './provision/frontendHosting.bicep' = {
   name: 'frontendHostingProvision'
   params: {
-    storageName: frontendHostingStorageName
+    provisionParameters: provisionParameters
   }
 }
 
@@ -21,12 +17,10 @@ output frontendHostingOutput object = {
 }
 
 // Resources for identity
-var userAssignedIdentityName = contains(provisionParameters, 'userAssignedIdentityName') ? provisionParameters['userAssignedIdentityName'] : '${resourceBaseName}-managedIdentity'
-
-module userAssignedIdentityProvision './provision/userAssignedIdentityProvision.bicep' = {
+module userAssignedIdentityProvision './provision/userAssignedIdentity.bicep' = {
   name: 'userAssignedIdentityProvision'
   params: {
-    identityName: userAssignedIdentityName
+    provisionParameters: provisionParameters
   }
 }
 
@@ -37,52 +31,30 @@ output identityOutput object = {
 }
 
 // Resources for Azure SQL
-var azureSqlAdmin = provisionParameters['azureSqlAdmin']
-var azureSqlAdminPassword = provisionParameters['azureSqlAdminPassword']
-var azureSqlServerName = contains(provisionParameters, 'azureSqlServerName') ? provisionParameters['azureSqlServerName'] : '${resourceBaseName}-sql-server'
-var azureSqlDatabaseName = contains(provisionParameters, 'azureSqlDatabaseName') ? provisionParameters['azureSqlDatabaseName'] : '${resourceBaseName}-database'
-
-module azureSqlProvision './provision/azureSqlProvision.bicep' = {
-  name: 'azureSqlProvision'
+module sqlProvision './provision/sql.bicep' = {
+  name: 'sqlProvision'
   params: {
-    sqlServerName: azureSqlServerName
-    sqlDatabaseName: azureSqlDatabaseName
-    administratorLogin: azureSqlAdmin
-    administratorLoginPassword: azureSqlAdminPassword
+    provisionParameters: provisionParameters
   }
 }
 
-output azureSqlOutput object = {
+output sqlOutput object = {
   teamsFxPluginId: 'fx-resource-azure-sql'
-  sqlServerResourceId: azureSqlProvision.outputs.sqlServerResourceId
-  sqlDatabaseName: azureSqlProvision.outputs.sqlDatabaseName
-  sqlServerEndpoint: azureSqlProvision.outputs.sqlServerEndpoint
+  sqlServerResourceId: sqlProvision.outputs.sqlServerResourceId
+  sqlDatabaseName: sqlProvision.outputs.sqlDatabaseName
+  sqlServerEndpoint: sqlProvision.outputs.sqlServerEndpoint
 }
 
 // Resources for bot
-var botAadAppClientId = provisionParameters['botAadAppClientId']
-var botAadAppClientSecret = provisionParameters['botAadAppClientSecret']
-var botServiceName = contains(provisionParameters, 'botServiceName') ? provisionParameters['botServiceName'] : '${resourceBaseName}-bot-service'
-var botDisplayName = contains(provisionParameters, 'botDisplayName') ? provisionParameters['botDisplayName'] : '${resourceBaseName}-bot-displayname'
-var botServerfarmsName = contains(provisionParameters, 'botServerfarmsName') ? provisionParameters['botServerfarmsName'] : '${resourceBaseName}-bot-serverfarms'
-var botWebAppSKU = contains(provisionParameters, 'botWebAppSKU') ? provisionParameters['botWebAppSKU'] : 'F1'
-var botSitesName = contains(provisionParameters, 'botSitesName') ? provisionParameters['botSitesName'] : '${resourceBaseName}-bot-sites'
-
-module botProvision './provision/botProvision.bicep' = {
+module botProvision './provision/bot.bicep' = {
   name: 'botProvision'
   params: {
-    serverfarmsName: botServerfarmsName
-    botServiceName: botServiceName
-    botAadAppClientId: botAadAppClientId
-    botAadAppClientSecret: botAadAppClientSecret
-    botDisplayName: botDisplayName
-    webAppName: botSitesName
-    webAppSKU: botWebAppSKU
+    provisionParameters: provisionParameters
     userAssignedIdentityId: userAssignedIdentityProvision.outputs.resourceId
   }
 }
 
-output botOutput object = {
+output botHostingOutput object = {
   teamsFxPluginId: 'fx-resource-bot'
   webAppEndpoint: botProvision.outputs.webAppEndpoint
   webAppResourceId: botProvision.outputs.webAppResourceId
@@ -90,16 +62,10 @@ output botOutput object = {
 }
 
 // Resources for Azure Functions
-var functionServerfarmsName = contains(provisionParameters, 'functionServerfarmsName') ? provisionParameters['functionServerfarmsName'] : '${resourceBaseName}-function-serverfarms'
-var functionWebappName = contains(provisionParameters, 'functionWebappName') ? provisionParameters['functionWebappName'] : '${resourceBaseName}-function-webapp'
-var functionStorageName = contains(provisionParameters, 'functionStorageName') ? provisionParameters['functionStorageName'] : 'functionstg${uniqueString(resourceBaseName)}'
-
-module functionProvision './provision/functionProvision.bicep' = {
+module functionProvision './provision/function.bicep' = {
   name: 'functionProvision'
   params: {
-    functionAppName: functionWebappName
-    serverfarmsName: functionServerfarmsName
-    storageName: functionStorageName
+    provisionParameters: provisionParameters
     userAssignedIdentityId: userAssignedIdentityProvision.outputs.resourceId
   }
 }
@@ -111,18 +77,11 @@ output functionOutput object = {
 }
 
 // Resources for Simple Auth
-var simpleAuthSku = contains(provisionParameters, 'simpleAuthSku') ? provisionParameters['simpleAuthSku'] : 'F1'
-var simpleAuthServerFarmsName = contains(provisionParameters, 'simpleAuthServerFarmsName') ? provisionParameters['simpleAuthServerFarmsName'] : '${resourceBaseName}-simpleAuth-serverfarms'
-var simpleAuthWebAppName = contains(provisionParameters, 'simpleAuthWebAppName') ? provisionParameters['simpleAuthWebAppName'] : '${resourceBaseName}-simpleAuth-webapp'
-var simpleAuthPackageUri = contains(provisionParameters, 'simpleAuthPackageUri') ? provisionParameters['simpleAuthPackageUri'] : 'https://github.com/OfficeDev/TeamsFx/releases/download/simpleauth@0.1.0/Microsoft.TeamsFx.SimpleAuth_0.1.0.zip'
-
-module simpleAuthProvision './provision/simpleAuthProvision.bicep' = {
+module simpleAuthProvision './provision/simpleAuth.bicep' = {
   name: 'simpleAuthProvision'
   params: {
-    serverFarmsName: simpleAuthServerFarmsName
-    webAppName: simpleAuthWebAppName
-    sku: simpleAuthSku
-    simpelAuthPackageUri: simpleAuthPackageUri
+    provisionParameters: provisionParameters
+    userAssignedIdentityId: userAssignedIdentityProvision.outputs.resourceId
   }
 }
 
@@ -130,4 +89,18 @@ output simpleAuthOutput object = {
   teamsFxPluginId: 'fx-resource-simple-auth'
   endpoint: simpleAuthProvision.outputs.endpoint
   webAppResourceId: simpleAuthProvision.outputs.webAppResourceId
+}
+
+// Resources for APIM
+module apimProvision './provision/apim.bicep' = {
+  name: 'apimProvision'
+  params: {
+    provisionParameters: provisionParameters
+  }
+}
+
+output apimOutput object = {
+  teamsFxPluginId: 'fx-resource-apim'
+  serviceResourceId: apimProvision.outputs.serviceResourceId
+  productResourceId: apimProvision.outputs.productResourceId
 }
